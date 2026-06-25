@@ -1,4 +1,3 @@
-"""Task 3: RAG core logic — retriever + prompt + generator."""
 
 from __future__ import annotations
 
@@ -12,11 +11,11 @@ from src.embedder import load_chroma_store, load_embedding_model, query_store
 
 
 PROMPT_TEMPLATE = """\
-You are a financial analyst assistant for CrediTrust Financial. Your task is to \
-answer questions about customer complaints submitted to the CFPB. Use ONLY the \
-retrieved complaint excerpts below to formulate your answer. Cite specific issues \
-mentioned by customers where possible. If the provided context does not contain \
-enough information to answer the question, say so explicitly — do not speculate.
+You are a financial analyst assistant for CrediTrust. Your task is to answer questions \
+about customer complaints. Use the following retrieved complaint excerpts to formulate \
+your answer. If the context doesn't contain the answer, state that you don't have \
+enough information.
+
 
 Context:
 {context}
@@ -91,3 +90,11 @@ class RAGPipeline:
         prompt = self.build_prompt(question, hits)
         answer = self.generate(prompt)
         return {"answer": answer, "sources": hits}
+
+from transformers import pipeline
+llm_model = "Qwen/Qwen2.5-0.5B-Instruct"
+pipe = pipeline(
+    "text-generation",
+    model=llm_model,
+    device="cpu"  # Force CPU instead of device_map="auto"
+)
