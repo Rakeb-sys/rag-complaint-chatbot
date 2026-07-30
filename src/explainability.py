@@ -8,15 +8,14 @@ logger = logging.getLogger(__name__)
 
 
 def create_shap_explainer(model, X_train: pd.DataFrame):
-    """Initializes a SHAP explainer compatible with XGBoost across version boundaries."""
+    """Initializes a SHAP explainer compatible with XGBoost and single-output binary metrics."""
     try:
-        # First attempt native TreeExplainer
+        # Native TreeExplainer output shape is (samples, features) for binary classification
         return shap.TreeExplainer(model)
     except Exception:
-        # Fallback to model-agnostic Explainer using model prediction function
+        # Fallback to single-output prediction function (Class 1 probability)
         if hasattr(model, "predict_proba"):
-            # Use probability output for classifiers
-            return shap.Explainer(model.predict_proba, X_train)
+            return shap.Explainer(lambda x: model.predict_proba(x)[:, 1], X_train)
         else:
             return shap.Explainer(model.predict, X_train)
 
