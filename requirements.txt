@@ -12,3 +12,5 @@ faiss-cpu
 ragas 
 langchain-huggingface 
 datasets
+shap
+xgboost

@@ -12,10 +12,10 @@ jobs:
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v4  # Fixed: Updated from @v3
+      uses: actions/checkout@v4.2.2
 
     - name: Set up Python
-      uses: actions/setup-python@v5  # Fixed: Updated from @v4
+      uses: actions/setup-python@v5.3.0
       with:
         python-version: '3.10'
         cache: 'pip'
@@ -26,6 +26,6 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install pytest pytest-cov
 
-    - name: Set PYTHONPATH and Run Unit Tests
+    - name: Run Unit Tests
       run: |
-        python -m pytest tests/
+        python -m pytest tests/ -v
