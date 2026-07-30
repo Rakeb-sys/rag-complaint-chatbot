@@ -7,11 +7,12 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 import numpy as np
 from src.config import cfg
+import logging
 
 
-EMBEDDING_MODEL = cfg.embedding_model
-CHUNK_SIZE = cfg.chunk_size
-CHUNK_OVERLAP = cfg.chunk_overlap
+EMBEDDING_MODEL = cfg.models.embedding_model
+CHUNK_SIZE = cfg.chunking.chunk_size
+CHUNK_OVERLAP = cfg.chunking.chunk_overlap
 COLLECTION_NAME = "cfpb_complaints"
 
 
@@ -156,3 +157,66 @@ def query_store(
     ):
         hits.append({"text": doc, "metadata": meta, "distance": dist})
     return hits
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    data_path = cfg.paths.processed_data
+    logger.info(f"Loading data from {data_path}...")
+    
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f"Cleaned dataset not found at {data_path}. Run preprocessing first.")
+
+    df = pd.read_csv(data_path)
+    
+    # Safely retrieve sample size
+    sample_size = 12000
+    if hasattr(cfg, "preprocessing") and hasattr(cfg.preprocessing, "sample_size"):
+        sample_size = cfg.preprocessing.sample_size
+    elif hasattr(cfg, "sample_size"):
+        sample_size = cfg.sample_size
+
+    # Detect Product column
+    product_col = "Product" if "Product" in df.columns else "product"
+
+    if len(df) > sample_size and product_col in df.columns:
+        logger.info(f"Sampling {sample_size} records across product categories...")
+        df = stratified_sample(df, n=sample_size, category_col=product_col)
+
+    # --- FIX: Dynamic column matching for narrative text ---
+    possible_text_cols = [
+        "clean_narrative", 
+        "cleaned_narrative", 
+        "consumer_complaint_narrative", 
+        "Consumer complaint narrative", 
+        "narrative", 
+        "complaint_text"
+    ]
+    
+    text_col = None
+    for col in possible_text_cols:
+        if col in df.columns:
+            text_col = col
+            break
+
+    if not text_col:
+        raise KeyError(
+            f"Could not find narrative column in DataFrame. Available columns are: {list(df.columns)}"
+        )
+
+    logger.info(f"Chunking narratives using column '{text_col}'...")
+    chunks = chunk_dataframe(df, text_col=text_col)
+    logger.info(f"Created {len(chunks)} chunks.")
+
+    logger.info(f"Loading embedding model ({EMBEDDING_MODEL})...")
+    model = load_embedding_model(EMBEDDING_MODEL)
+
+    logger.info("Generating embeddings...")
+    embeddings = embed_chunks(chunks, model)
+
+    logger.info("Building and persisting ChromaDB collection...")
+    persist_dir = str(cfg.paths.vector_store / "chroma") if hasattr(cfg.paths.vector_store, "__truediv__") else os.path.join(str(cfg.paths.vector_store), "chroma")
+    collection = build_chroma_store(chunks, embeddings, persist_dir=persist_dir)
+
+    logger.info(f"Successfully saved {collection.count()} items to ChromaDB at {persist_dir}!")

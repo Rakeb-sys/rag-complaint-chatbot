@@ -1,6 +1,6 @@
 import yaml
 from pathlib import Path
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 
 class PathConfig(BaseModel):
     raw_data: Path
@@ -9,8 +9,8 @@ class PathConfig(BaseModel):
     logs: Path
 
 class ChunkConfig(BaseModel):
-    chunk_size: int
-    chunk_overlap: int
+    chunk_size: int = Field(default=500)
+    chunk_overlap: int = Field(default=50)
 
 class ModelConfig(BaseModel):
     embedding_model: str

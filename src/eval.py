@@ -2,7 +2,7 @@ import time
 from typing import List, Dict, Set
 
 def evaluate_retrieval(
-    test_cases: List[Dict[str, Any]], retriever, k: int = 5
+    test_cases: List[Dict[str, any]], retriever, k: int = 5
 ) -> Dict[str, float]:
     """
     test_cases schema:

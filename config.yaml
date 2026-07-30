@@ -1,6 +1,6 @@
 paths:
   raw_data: "data/complaints.csv"
-  processed_data: "data/filtered_complaints.csv"
+  processed_data: "data/processed/filtered_complaints.csv"
   vector_store: "vector_store/"
   logs: "logs/app.log"
 
@@ -14,7 +14,7 @@ preprocessing:
 
 chunking:
   chunk_size: 500
-  chunk_size: 50
+  chunk_overlap: 50
 
 models:
   embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
