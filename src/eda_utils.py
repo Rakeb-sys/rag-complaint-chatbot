@@ -11,7 +11,15 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 import nltk
+# Ensure all required NLTK packages are downloaded automatically
+nltk.download('wordnet', quiet=True)
+nltk.download('stopwords', quiet=True)
+nltk.download('punkt', quiet=True)
+nltk.download('punkt_tab', quiet=True)
 
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
 nltk.download('wordnet')
 
 stop_words = set(stopwords.words('english'))
