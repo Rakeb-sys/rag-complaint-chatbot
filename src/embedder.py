@@ -6,11 +6,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 import chromadb
 import numpy as np
+from src.config import cfg
 
 
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-CHUNK_SIZE = 500
-CHUNK_OVERLAP = 50
+EMBEDDING_MODEL = cfg.embedding_model
+CHUNK_SIZE = cfg.chunk_size
+CHUNK_OVERLAP = cfg.chunk_overlap
 COLLECTION_NAME = "cfpb_complaints"
 
 

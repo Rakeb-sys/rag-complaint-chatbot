@@ -11,3 +11,11 @@ __pycache__/
 /config.local
 /tmp
 /cache
+# FAISS index files and Python pickles
+*.faiss
+*.pkl
+
+# ChromaDB default directory
+chroma_db/
+chroma/
+*.parquet
