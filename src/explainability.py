@@ -8,17 +8,17 @@ logger = logging.getLogger(__name__)
 
 
 def create_shap_explainer(model, X_train: pd.DataFrame):
-    """Initializes the appropriate SHAP explainer based on model type."""
+    """Initializes a SHAP explainer compatible with XGBoost across version boundaries."""
     try:
-        # Optimized tree explainer for XGBoost / LightGBM / Random Forest
-        explainer = shap.TreeExplainer(model)
-        logger.info("Initialized SHAP TreeExplainer.")
+        # First attempt native TreeExplainer
+        return shap.TreeExplainer(model)
     except Exception:
-        # Fallback KernelExplainer or generic Explainer
-        explainer = shap.Explainer(model, X_train)
-        logger.info("Initialized generic SHAP Explainer.")
-    
-    return explainer
+        # Fallback to model-agnostic Explainer using model prediction function
+        if hasattr(model, "predict_proba"):
+            # Use probability output for classifiers
+            return shap.Explainer(model.predict_proba, X_train)
+        else:
+            return shap.Explainer(model.predict, X_train)
 
 
 def compute_shap_values(explainer, X_data: pd.DataFrame):
